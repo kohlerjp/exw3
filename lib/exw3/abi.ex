@@ -21,6 +21,18 @@ defmodule ExW3.Abi do
     end
   end
 
+  @doc "Loads the abi json at the file path and reformats it to a map"
+  @spec load_abi_json(binary()) :: list() | {:error, atom()}
+  def load_abi_json(file_path) do
+    with {:ok, cwd} <- File.cwd(),
+         {:ok, abi} <- File.read(Path.join([cwd, file_path])) do
+      abi
+      |> Jason.decode!()
+      |> Map.get("abi")
+      |> reformat_abi()
+    end
+  end
+
   @doc "Loads the bin ar the file path"
   @spec load_bin(binary()) :: binary()
   def load_bin(file_path) do

@@ -508,49 +508,52 @@ defmodule ExW3.Contract do
   def handle_call({:tx_receipt, {contract_name, tx_hash}}, _from, state) do
     contract_info = state[contract_name]
 
-    {:ok, receipt} = ExW3.tx_receipt(tx_hash)
+    case ExW3.tx_receipt(tx_hash) do
+      {:error, error} -> {:reply, {:error, error}, state}
+      {:ok, receipt} ->
 
-    events = contract_info[:events]
-    logs = receipt["logs"]
+      events = contract_info[:events]
+      logs = receipt["logs"]
 
-    formatted_logs =
-      Enum.map(logs, fn log ->
-        topic = Enum.at(log["topics"], 0)
-        event_attributes = Map.get(events, topic)
+      formatted_logs =
+        Enum.map(logs, fn log ->
+          topic = Enum.at(log["topics"], 0)
+          event_attributes = Map.get(events, topic)
 
-        if event_attributes do
-          non_indexed_fields =
-            Enum.zip(
-              event_attributes[:non_indexed_names],
-              ExW3.Abi.decode_event(log["data"], event_attributes[:signature])
-            )
-            |> Enum.into(%{})
+          if event_attributes do
+            non_indexed_fields =
+              Enum.zip(
+                event_attributes[:non_indexed_names],
+                ExW3.Abi.decode_event(log["data"], event_attributes[:signature])
+              )
+              |> Enum.into(%{})
 
-          if length(log["topics"]) > 1 do
-            [_head | tail] = log["topics"]
+            if length(log["topics"]) > 1 do
+              [_head | tail] = log["topics"]
 
-            decoded_topics =
-              Enum.map(0..(length(tail) - 1), fn i ->
-                topic_type = Enum.at(event_attributes[:topic_types], i)
-                topic_data = Enum.at(tail, i)
+              decoded_topics =
+                Enum.map(0..(length(tail) - 1), fn i ->
+                  topic_type = Enum.at(event_attributes[:topic_types], i)
+                  topic_data = Enum.at(tail, i)
 
-                {decoded} = ExW3.Abi.decode_data(topic_type, topic_data)
+                  {decoded} = ExW3.Abi.decode_data(topic_type, topic_data)
 
-                decoded
-              end)
+                  decoded
+                end)
 
-            indexed_fields =
-              Enum.zip(event_attributes[:topic_names], decoded_topics) |> Enum.into(%{})
+              indexed_fields =
+                Enum.zip(event_attributes[:topic_names], decoded_topics) |> Enum.into(%{})
 
-            Map.merge(indexed_fields, non_indexed_fields)
+              Map.merge(indexed_fields, non_indexed_fields)
+            else
+              non_indexed_fields
+            end
           else
-            non_indexed_fields
+            nil
           end
-        else
-          nil
-        end
-      end)
+        end)
 
-    {:reply, {:ok, {receipt, formatted_logs}}, state}
+      {:reply, {:ok, {receipt, formatted_logs}}, state}
+    end
   end
 end

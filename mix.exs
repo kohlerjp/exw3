@@ -31,6 +31,7 @@ defmodule ExW3.MixProject do
       {:ex_abi, git: "git://github.com/kohlerjp/ex_abi.git", branch: "master"},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:eth, git: "git://github.com/kohlerjp/eth.git", branch: "master"},
+      #{:blockchain, "~> 0.1.7"},
       {:jason, "~> 1.2"}
     ]
   end

@@ -264,7 +264,7 @@ defmodule ExW3.Contract do
       },
       Map.merge(options, encoded_options)
     )
-    signed_tx = Eth.sign_transaction(tx, private_key)
+    signed_tx = ETH.sign_transaction(tx, private_key)
     ExW3.Rpc.eth_send_raw([signed_tx])
   end
 

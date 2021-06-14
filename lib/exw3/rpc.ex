@@ -182,4 +182,8 @@ defmodule ExW3.Rpc do
   def eth_send(arguments) do
     call_client(:eth_send_transaction, arguments)
   end
+
+  def eth_send_raw(arguments) do
+    call_client(:eth_send_raw_transaction, arguments)
+  end
 end

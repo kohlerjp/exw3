@@ -27,9 +27,10 @@ defmodule ExW3.MixProject do
     [
       {:ex_doc, ">= 0.0.0", only: :dev},
       {:ethereumex, "~> 0.7.0"},
-      {:ex_keccak, git: "git://github.com/kohlerjp/ex_keccak.git", branch: "master"},
+      {:ex_keccak, git: "git://github.com/kohlerjp/ex_keccak.git", branch: "master", override: true},
       {:ex_abi, git: "git://github.com/kohlerjp/ex_abi.git", branch: "master"},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+      {:eth, git: "git://github.com/kohlerjp/eth.git", branch: "master"},
       {:jason, "~> 1.2"}
     ]
   end

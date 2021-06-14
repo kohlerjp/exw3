@@ -49,6 +49,10 @@ defmodule ExW3.Contract do
     GenServer.call(ContractManager, {:send, {contract_name, method_name, args, options}})
   end
 
+  def send_signed(contract_name, private_key, method_name, args, options) do
+    GenServer.call(ContractManager, {:send_signed, {contract_name, private_key, method_name, args, options}})
+  end
+
   @doc "Returns a formatted transaction receipt for the given transaction hash(id)"
   @spec tx_receipt(atom(), binary()) :: map()
   def tx_receipt(contract_name, tx_hash) do
@@ -239,6 +243,29 @@ defmodule ExW3.Contract do
         Map.merge(options, encoded_options)
       )
     ])
+  end
+
+  def eth_send_signed_helper(address, private_key, abi, method_name, args, options) do
+    encoded_options =
+      ExW3.Abi.encode_options(
+        options,
+        [:gas, :gasPrice, :value, :nonce]
+      )
+
+    gas = ExW3.Abi.encode_option(args[:options][:gas])
+    gasPrice = ExW3.Abi.encode_option(args[:options][:gas_price])
+
+    tx = Map.merge(
+      %{
+        to: address,
+        data: "0x#{ExW3.Abi.encode_method_call(abi, method_name, args)}",
+        gas: gas,
+        gasPrice: gasPrice
+      },
+      Map.merge(options, encoded_options)
+    )
+    signed_tx = Eth.sign_transaction(tx, private_key)
+    ExW3.Rpc.eth_send_raw([signed_tx])
   end
 
   defp register_helper(contract_info) do
@@ -493,6 +520,28 @@ defmodule ExW3.Contract do
       result =
         eth_send_helper(
           address,
+          contract_info[:abi],
+          Atom.to_string(method_name),
+          args,
+          options
+        )
+
+      {:reply, result, state}
+    else
+      err -> {:reply, err, state}
+    end
+  end
+
+  def handle_call({:send_signed, {contract_name, private_key, method_name, args, options}}, _from, state) do
+    contract_info = state[contract_name]
+
+    with {:ok, address} <- check_option(contract_info[:address], :missing_address),
+         {:ok, _} <- check_option(options[:from], :missing_sender),
+         {:ok, _} <- check_option(options[:gas], :missing_gas) do
+      result =
+        eth_send_signed_helper(
+          address,
+          private_key,
           contract_info[:abi],
           Atom.to_string(method_name),
           args,

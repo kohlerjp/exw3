@@ -252,17 +252,17 @@ defmodule ExW3.Contract do
         [:gas, :gasPrice, :value, :nonce]
       )
 
-    gas = ExW3.Abi.encode_option(args[:options][:gas])
-    gasPrice = ExW3.Abi.encode_option(args[:options][:gas_price])
+    #gas = ExW3.Abi.encode_option(args[:options][:gas])
+    #gasPrice = ExW3.Abi.encode_option(args[:options][:gas_price])
 
     tx_map = Map.merge(
       %{
         to: address,
         data: "0x#{ExW3.Abi.encode_method_call(abi, method_name, args)}",
-        gas: gas,
-        gas_limit: gas,
-        gas_price: gasPrice,
-        gasPrice: gasPrice,
+        gas: args[:options][:gas],
+        gas_limit: args[:options][:gas],
+        gas_price: args[:options][:gas_price],
+        gasPrice: args[:options][:gas_price]
       },
       Map.merge(options, encoded_options)
     )

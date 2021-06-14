@@ -260,7 +260,8 @@ defmodule ExW3.Contract do
         to: address,
         data: "0x#{ExW3.Abi.encode_method_call(abi, method_name, args)}",
         gas: gas,
-        gasPrice: gasPrice
+        gasPrice: gasPrice,
+        value: 0
       },
       Map.merge(options, encoded_options)
     )

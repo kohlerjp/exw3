@@ -263,12 +263,12 @@ defmodule ExW3.Contract do
         gas_limit: gas,
         gas_price: gasPrice,
         gasPrice: gasPrice,
-        nonce: 5
       },
       Map.merge(options, encoded_options)
     )
-    #tx = ETH.build(tx_map)
-    signed_tx = ETH.sign_transaction(tx, private_key)
+    tx = ETH.build(tx_map)
+
+    signed_tx = ETH.sign_transaction(tx_map, private_key)
     ExW3.Rpc.eth_send_raw([signed_tx])
   end
 

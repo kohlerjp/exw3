@@ -255,7 +255,7 @@ defmodule ExW3.Contract do
     gas = ExW3.Abi.encode_option(args[:options][:gas])
     gasPrice = ExW3.Abi.encode_option(args[:options][:gas_price])
 
-    tx = Map.merge(
+    tx_map = Map.merge(
       %{
         to: address,
         data: "0x#{ExW3.Abi.encode_method_call(abi, method_name, args)}",
@@ -265,6 +265,7 @@ defmodule ExW3.Contract do
       },
       Map.merge(options, encoded_options)
     )
+    tx = ETH.build(tx_map)
     signed_tx = ETH.sign_transaction(tx, private_key)
     ExW3.Rpc.eth_send_raw([signed_tx])
   end
